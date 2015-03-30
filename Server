@@ -1,0 +1,86 @@
+package jrJava.mouseAndMaze;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import resources.DrawingBoard;
+import resources.Timer;
+
+import jrJava.network.SimpleServer;
+
+public class Server {
+
+
+
+	private int serverPortNumber = 5454;
+
+	private InputStream is;
+	private OutputStream os; 
+
+	public InputStream getInputStream(){
+		return is;
+	}
+	public OutputStream getOutputStream(){
+		return os;
+	}
+
+	public void connect() {
+		try{
+			ServerSocket ss = new ServerSocket(serverPortNumber);
+			Socket socket = ss.accept();
+			is = socket.getInputStream();
+			os = socket.getOutputStream();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public static void main(String[] args) throws Exception{
+		
+		Server server = new Server();
+		server.connect();
+		
+		MessageReceiver receiver = new MessageReceiver( server.getInputStream());
+		Thread receiverThread = new Thread(receiver);
+		receiverThread.start();
+		
+		
+		MessageSender sender = new MessageSender( server.getOutputStream());
+	
+		Mouse myMouse = new Mouse(180, 370, -1, 0, 3, true);
+		Mouse enemyMouse = new Mouse(120, 250, 0, 1, 3, false);
+		
+		receiver.setEnemyMouse(enemyMouse);
+		myMouse.setMessageSender(sender);
+		
+		DrawingBoard board = new DrawingBoard(600,600);
+		Timer timer = new Timer();
+		
+		board.getJFrame().addKeyListener(myMouse);
+		Thread myMouseThread = new Thread(myMouse);
+		myMouseThread.start();
+		
+		//Thread enemyMouseThread = new Thread(enemyMouse);
+		//enemyMouseThread.start();
+		
+		while(true){
+			
+		board.clear();
+	
+		myMouse.move();
+		enemyMouse.move();
+		
+		myMouse.draw(board);
+		enemyMouse.draw(board);
+		
+		board.repaint();
+		timer.pause(100);
+		}
+	}
+
+}
