@@ -1,0 +1,36 @@
+package jrJava.mouseAndMaze;
+
+import resources.DrawingBoard;
+import resources.Timer;
+
+public class Coordinator {
+
+	public static void main(String[] args) {
+		
+		Mouse myMouse = new Mouse(120, 250, 0, 1, 5, true);
+		Mouse enemyMouse = new Mouse(180, 370, -1, 0, 5, false);
+		
+		DrawingBoard board = new DrawingBoard(600,600);
+		Timer timer = new Timer();
+		
+		board.getJFrame().addKeyListener(myMouse);
+		Thread myMouseThread = new Thread(myMouse);
+		myMouseThread.start();
+		
+		Thread enemyMouseThread = new Thread(enemyMouse);
+		enemyMouseThread.start();
+		
+		while(true){
+			
+		board.clear();
+	
+		
+		myMouse.draw(board);
+		enemyMouse.draw(board);
+		
+		board.repaint();
+		timer.pause(100);
+		}
+	}
+
+}
