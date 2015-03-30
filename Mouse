@@ -1,0 +1,175 @@
+package jrJava.mouseAndMaze;
+
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.StringTokenizer;
+
+import javax.swing.ImageIcon;
+
+
+
+import resources.DrawingBoard;
+import resources.Timer;
+
+public class Mouse implements KeyListener, Runnable{
+
+	private MessageSender sender;
+
+	static boolean isMine;
+	private int x,y;
+	private int stepSize;
+	private int xSpeed;
+	private int ySpeed;
+	private Image image;
+
+	private static Image imageE;
+	private static Image imageN;
+	private static Image imageS;
+	private static Image imageW;
+	private static int size;
+	
+
+	static {
+		imageE = new ImageIcon("tinyMouseE.png").getImage();
+		imageN = new ImageIcon("tinyMouseN.png").getImage();
+		imageS = new ImageIcon("tinyMouseS.png").getImage();
+		imageW = new ImageIcon("tinyMouseW.png").getImage();
+
+	}
+
+	public Mouse(int _x, int _y, int _xSpeed, int _ySpeed, int _stepSize, boolean _isMine){
+		stepSize = 5;
+		x = _x;
+		y= _y;
+		xSpeed = _xSpeed;
+		ySpeed = _ySpeed;
+		stepSize = _stepSize;
+		isMine = _isMine;
+		chooseImage();
+
+	}
+
+
+	public void setMessageSender(MessageSender _sender){
+		sender = _sender;
+	}
+
+	public void move(){
+		x = x+xSpeed* stepSize;
+		y= y+ySpeed*stepSize;
+	}
+
+	public  void draw(DrawingBoard board){
+		Graphics2D canvas = board.getCanvas();
+		canvas.drawImage(image, x-size/2, y-size/2, board);
+	}
+
+	public void run() {
+
+		Timer timer = new Timer();
+		while(true){
+			if(isMine){
+				move();
+				sendData();
+			}
+			timer.pause(50);
+		}
+	}
+
+
+	public void sendData(){
+		StringBuffer sb = new StringBuffer();
+		sb.append("x");
+		sb.append(',');
+		sb.append("y");
+		sb.append(',');
+		sb.append("xSpeed");
+		sb.append(',');
+		sb.append("ySpeed");
+		String msg = sb.toString();
+		//String msg = x + "," + y +","+ xSpeed +"," +ySpeed;
+		sender.send(msg);
+	}
+
+	public void receiveData(String msg){
+		StringTokenizer st = new StringTokenizer(msg, ",");
+		x = Integer.parseInt(st.nextToken());
+		y = Integer.parseInt(st.nextToken());
+		xSpeed = Integer.parseInt(st.nextToken());
+		ySpeed = Integer.parseInt(st.nextToken());
+		chooseImage();
+	}
+	public void chooseImage(){
+		if(xSpeed>0){
+			image = imageE;
+
+		}
+		else if(xSpeed<0){
+			image = imageW;
+
+
+		}
+		else if(ySpeed>0){
+			image = imageS;
+		}
+
+		else if(ySpeed<0){
+			image = imageN;
+		}
+	}
+
+
+
+
+	public  void keyTyped(KeyEvent e) {
+
+	}
+
+
+	public void keyPressed(KeyEvent e) {
+		if(e.getKeyCode()==KeyEvent.VK_LEFT){
+
+			xSpeed = -1;
+			ySpeed = 0;
+		}
+
+		else if(e.getKeyCode()==KeyEvent.VK_RIGHT){
+
+			xSpeed = 1;
+			ySpeed = 0;
+
+		}
+		else if(e.getKeyCode()==KeyEvent.VK_UP){
+
+			xSpeed = 0;
+			ySpeed = -1;
+		}
+
+		else if (e.getKeyCode()==KeyEvent.VK_DOWN){
+
+			xSpeed = 0;
+			ySpeed = 1;
+
+		}
+		chooseImage();
+	}
+
+
+	public void keyReleased(KeyEvent e) {
+
+	}
+
+
+
+
+
+}
+
+
+
+
+
+
+
